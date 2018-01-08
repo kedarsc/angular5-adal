@@ -65,6 +65,8 @@ var Adal5HTTPService = (function () {
     Adal5HTTPService.prototype.post = function (url, body, options) {
         options.body = body;
         return this.sendRequest('post', url, options);
+        // console.log(response);
+        // return response;
     };
     /**
      *
@@ -136,14 +138,41 @@ var Adal5HTTPService = (function () {
             if (this.service.userInfo.authenticated) {
                 authenticatedCall = this.service.acquireToken(resource)
                     .flatMap(function (token) {
-                    if (options.headers == null) {
-                        var headers = new http_1.HttpHeaders();
-                        headers = headers
-                            .set('Authorization', "Bearer " + token);
-                        options.headers = headers;
+                    // if (options.headers == null) {
+                    //   let headers = new HttpHeaders();
+                    //   headers = headers
+                    //     .set('Authorization', `Bearer ${token}`);
+                    //   options.headers = headers;
+                    // } else {
+                    //   options.headers.set('Authorization', 'Bearer ' + token);
+                    // }
+                    // let headers = new HttpHeaders();
+                    // headers = headers.set('Authorization', `Bearer ${token}`);
+                    // headers = headers.set('Accept', 'application/json');
+                    // headers = headers.set('Content-Type', 'application/json');
+                    options = { headers: new http_1.HttpHeaders().set('Authorization', 'Bearer ' + token)
+                            .set('Content-Type', 'application/json'), observe: 'response' };
+                    if (method === 'post') {
+                        return _this.http.post(url, options.body, { headers: { 'Authorization': 'Bearer ' + token },
+                            observe: 'response' })
+                            .catch(_this.handleError);
                     }
-                    return _this.http.request(method, url, options)
-                        .catch(_this.handleError);
+                    else if (method === 'get') {
+                        return _this.http.get(url, options)
+                            .catch(_this.handleError);
+                    }
+                    else if (method === 'put') {
+                        return _this.http.put(url, options.body, options)
+                            .catch(_this.handleError);
+                    }
+                    else if (method === 'patch') {
+                        return _this.http.patch(url, options.body, options)
+                            .catch(_this.handleError);
+                    }
+                    else if (method === 'delete') {
+                        return _this.http.delete(url, options)
+                            .catch(_this.handleError);
+                    }
                 });
             }
             else {
@@ -151,7 +180,27 @@ var Adal5HTTPService = (function () {
             }
         }
         else {
-            authenticatedCall = this.http.request(method, url, options).catch(this.handleError);
+            // authenticatedCall = this.http.request(url, options).catch(this.handleError);
+            if (method === 'post') {
+                authenticatedCall = this.http.post(url, options.body, options)
+                    .catch(this.handleError);
+            }
+            else if (method === 'get') {
+                authenticatedCall = this.http.get(url, options)
+                    .catch(this.handleError);
+            }
+            else if (method === 'put') {
+                authenticatedCall = this.http.put(url, options.body, options)
+                    .catch(this.handleError);
+            }
+            else if (method === 'patch') {
+                authenticatedCall = this.http.patch(url, options.body, options)
+                    .catch(this.handleError);
+            }
+            else if (method === 'delete') {
+                authenticatedCall = this.http.delete(url, options)
+                    .catch(this.handleError);
+            }
         }
         return authenticatedCall;
     };

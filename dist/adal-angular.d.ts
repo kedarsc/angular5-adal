@@ -4,11 +4,13 @@ declare module 'adal-angular' {
     export function inject(config: adal.Config): adal.AuthenticationContext;
 }
 
-declare var AuthenticationContext: adal.AuthenticationContextStatic;
-declare var Logging: adal.Logging;
+// declare var AuthenticationContext: adal.AuthenticationContextStatic;
+// declare var Logging: adal.Logging;
 
 declare module 'adal' {
-    export = { AuthenticationContext, Logging };
+    const _exported: { AuthenticationContext: adal.AuthenticationContextStatic, Logging: adal.Logging};
+
+    export = _exported;
 }
 
 declare namespace adal {
