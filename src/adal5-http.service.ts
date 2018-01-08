@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs/Rx';
 import { Adal5Service } from './adal5.service';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
 
 /**
  *
@@ -79,6 +79,8 @@ export class Adal5HTTPService {
   }): Observable<any> {
     options.body = body;
     return this.sendRequest('post', url, options);
+    // console.log(response);
+    // return response;
   }
 
   /**
@@ -195,20 +197,60 @@ export class Adal5HTTPService {
       if (this.service.userInfo.authenticated) {
         authenticatedCall = this.service.acquireToken(resource)
           .flatMap((token: string) => {
-            if (options.headers == null) {
-              let headers = new HttpHeaders();
-              headers = headers
-                .set('Authorization', `Bearer ${token}`);
-              options.headers = headers;
+            // if (options.headers == null) {
+            //   let headers = new HttpHeaders();
+            //   headers = headers
+            //     .set('Authorization', `Bearer ${token}`);
+            //   options.headers = headers;
+            // } else {
+            //   options.headers.set('Authorization', 'Bearer ' + token);
+            // }
+            // let headers = new HttpHeaders();
+            // headers = headers.set('Authorization', `Bearer ${token}`);
+            // headers = headers.set('Accept', 'application/json');
+            // headers = headers.set('Content-Type', 'application/json');
+
+            options = { headers: new HttpHeaders().set('Authorization', 'Bearer ' + token)
+            .set('Content-Type', 'application/json'), observe: 'response' };
+            if (method === 'post') {
+              return this.http.post(url, options.body, { headers: {'Authorization': 'Bearer ' + token}
+              , observe: 'response' } )
+                .catch(this.handleError);
+            } else if (method === 'get') {
+              return this.http.get(url, options)
+                .catch(this.handleError);
+            } else if (method === 'put') {
+              return this.http.put(url, options.body, options)
+                .catch(this.handleError);
+            } else if (method === 'patch') {
+              return this.http.patch(url, options.body, options)
+                .catch(this.handleError);
+            } else if (method === 'delete') {
+              return this.http.delete(url, options)
+                .catch(this.handleError);
             }
-            return this.http.request(url, options)
-              .catch(this.handleError);
           });
       } else {
         authenticatedCall = Observable.throw(new Error('User Not Authenticated.'));
       }
     } else {
-      authenticatedCall = this.http.request(url, options).catch(this.handleError);
+      // authenticatedCall = this.http.request(url, options).catch(this.handleError);
+      if (method === 'post') {
+        authenticatedCall = this.http.post(url, options.body, options)
+          .catch(this.handleError);
+      } else if (method === 'get') {
+        authenticatedCall = this.http.get(url, options)
+          .catch(this.handleError);
+      } else if (method === 'put') {
+        authenticatedCall = this.http.put(url, options.body, options)
+          .catch(this.handleError);
+      } else if (method === 'patch') {
+        authenticatedCall = this.http.patch(url, options.body, options)
+          .catch(this.handleError);
+      } else if (method === 'delete') {
+        authenticatedCall = this.http.delete(url, options)
+          .catch(this.handleError);
+      }
     }
 
     return authenticatedCall;
